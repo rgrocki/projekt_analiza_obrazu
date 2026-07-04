@@ -262,8 +262,8 @@ generated_files = report.generate()
 
 ## Zespół
 
-Projekt realizowany grupowo — każdy moduł w `src/` jest rozwijany niezależnie na wspólnym repozytorium GitHub.
+Projekt realizowany grupowo.
 
 ## Licencja
 
-Projekt akademicki — Politechnika / przedmiot analiza obrazu.
+Projekt akademicki.
