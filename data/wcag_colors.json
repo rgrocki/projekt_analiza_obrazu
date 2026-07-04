@@ -1,0 +1,294 @@
+[
+  {
+    "name": "black_on_white",
+    "text": [0, 0, 0],
+    "background": [255, 255, 255],
+    "context": "Klasyczny tekst body na białym tle — referencyjny przypadek AAA",
+    "category": "pass_aa"
+  },
+  {
+    "name": "white_on_black",
+    "text": [255, 255, 255],
+    "background": [0, 0, 0],
+    "context": "Tryb ciemny — biały tekst na czarnym tle",
+    "category": "pass_aa"
+  },
+  {
+    "name": "dark_gray_on_white",
+    "text": [51, 51, 51],
+    "background": [255, 255, 255],
+    "context": "Ciemnoszary tekst na białym tle (popularny w design systemach)",
+    "category": "pass_aa"
+  },
+  {
+    "name": "wcag_aa_threshold_gray",
+    "text": [118, 118, 118],
+    "background": [255, 255, 255],
+    "context": "#767676 na białym — graniczna wartość AA (≈4.54:1)",
+    "category": "pass_aa"
+  },
+  {
+    "name": "bootstrap_primary_button",
+    "text": [255, 255, 255],
+    "background": [13, 110, 253],
+    "context": "Przycisk primary Bootstrap 5 — biały tekst na niebieskim",
+    "category": "pass_aa"
+  },
+  {
+    "name": "large_text_threshold_gray",
+    "text": [148, 148, 148],
+    "background": [255, 255, 255],
+    "context": "#949494 na białym — granica AA dla dużego tekstu (≈3:1)",
+    "category": "pass_large_only"
+  },
+  {
+    "name": "placeholder_text",
+    "text": [170, 170, 170],
+    "background": [255, 255, 255],
+    "context": "Jasnoszary placeholder w polu formularza",
+    "category": "pass_large_only"
+  },
+  {
+    "name": "light_blue_on_white",
+    "text": [100, 149, 237],
+    "background": [255, 255, 255],
+    "context": "Jasnoniebieski link na białym tle — typowy błąd w formularzach",
+    "category": "pass_large_only"
+  },
+  {
+    "name": "yellow_text_on_white",
+    "text": [255, 220, 0],
+    "background": [255, 255, 255],
+    "context": "Żółty tekst ostrzegawczy na białym tle",
+    "category": "pass_large_only"
+  },
+  {
+    "name": "green_accent_on_light_gray",
+    "text": [144, 238, 144],
+    "background": [245, 245, 245],
+    "context": "Jasnozielony tekst na jasnoszarym tle dashboardu",
+    "category": "pass_large_only"
+  },
+  {
+    "name": "light_gray_on_white",
+    "text": [200, 200, 200],
+    "background": [255, 255, 255],
+    "context": "Bardzo jasny szary tekst — nieczytelny dla większości użytkowników",
+    "category": "fail"
+  },
+  {
+    "name": "white_on_light_yellow",
+    "text": [255, 255, 255],
+    "background": [255, 255, 200],
+    "context": "Biały tekst na jasnożółtym banerze promocyjnym",
+    "category": "fail"
+  },
+  {
+    "name": "pink_on_white",
+    "text": [255, 182, 193],
+    "background": [255, 255, 255],
+    "context": "Różowy tekst dekoracyjny na białym tle",
+    "category": "fail"
+  },
+  {
+    "name": "light_green_on_white",
+    "text": [173, 255, 47],
+    "background": [255, 255, 255],
+    "context": "Jasnozielony tekst statusu na białym tle",
+    "category": "fail"
+  },
+  {
+    "name": "cyan_on_light_blue",
+    "text": [0, 255, 255],
+    "background": [173, 216, 230],
+    "context": "Cyjan na jasnoniebieskim — typowy problem w aplikacjach mobilnych",
+    "category": "fail"
+  },
+  {
+    "name": "ios_system_blue_button",
+    "text": [255, 255, 255],
+    "background": [0, 122, 255],
+    "context": "Przycisk iOS — biały tekst na systemowym niebieskim",
+    "category": "real_ui"
+  },
+  {
+    "name": "material_design_error",
+    "text": [255, 255, 255],
+    "background": [176, 0, 32],
+    "context": "Komunikat błędu Material Design — biały na czerwonym",
+    "category": "real_ui"
+  },
+  {
+    "name": "github_dark_mode_text",
+    "text": [201, 209, 217],
+    "background": [13, 17, 23],
+    "context": "Tekst body w trybie ciemnym GitHub",
+    "category": "real_ui"
+  },
+  {
+    "name": "tailwind_muted_text",
+    "text": [107, 114, 128],
+    "background": [255, 255, 255],
+    "context": "Tekst muted w Tailwind CSS (gray-500) na białym tle",
+    "category": "real_ui"
+  },
+  {
+    "name": "disabled_input_text",
+    "text": [156, 163, 175],
+    "background": [243, 244, 246],
+    "context": "Wyłączone pole formularza — szary tekst na jasnoszarym tle",
+    "category": "real_ui"
+  },
+  {
+    "name": "google_search_text",
+    "text": [32, 33, 36],
+    "background": [255, 255, 255],
+    "context": "Tekst wyników wyszukiwania Google na białym tle",
+    "category": "real_ui",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "facebook_primary_button",
+    "text": [255, 255, 255],
+    "background": [24, 119, 242],
+    "context": "Przycisk Facebook — biały tekst na niebieskim (#1877F2)",
+    "category": "real_ui",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "whatsapp_cta_button",
+    "text": [255, 255, 255],
+    "background": [37, 211, 102],
+    "context": "Przycisk WhatsApp — biały tekst na zielonym",
+    "category": "real_ui",
+    "ui_type": "aplikacja_mobilna"
+  },
+  {
+    "name": "spotify_dark_mode",
+    "text": [255, 255, 255],
+    "background": [25, 20, 20],
+    "context": "Biały tekst na ciemnym tle Spotify",
+    "category": "real_ui",
+    "ui_type": "aplikacja_mobilna"
+  },
+  {
+    "name": "form_error_message",
+    "text": [220, 53, 69],
+    "background": [255, 255, 255],
+    "context": "Komunikat błędu walidacji formularza — czerwony tekst na białym",
+    "category": "real_ui",
+    "ui_type": "formularz"
+  },
+  {
+    "name": "form_success_message",
+    "text": [25, 135, 84],
+    "background": [255, 255, 255],
+    "context": "Komunikat sukcesu formularza — zielony tekst na białym",
+    "category": "real_ui",
+    "ui_type": "formularz"
+  },
+  {
+    "name": "dashboard_chart_label",
+    "text": [73, 80, 87],
+    "background": [248, 249, 250],
+    "context": "Etykieta wykresu na jasnoszarym tle dashboardu",
+    "category": "real_ui",
+    "ui_type": "dashboard"
+  },
+  {
+    "name": "dashboard_kpi_value",
+    "text": [33, 37, 41],
+    "background": [255, 255, 255],
+    "context": "Wartość KPI na białej karcie dashboardu",
+    "category": "real_ui",
+    "ui_type": "dashboard"
+  },
+  {
+    "name": "linkedin_nav_button",
+    "text": [255, 255, 255],
+    "background": [10, 102, 194],
+    "context": "Przycisk LinkedIn — biały tekst na niebieskim",
+    "category": "real_ui",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "amazon_orange_cta",
+    "text": [15, 17, 17],
+    "background": [255, 153, 0],
+    "context": "Przycisk Amazon — ciemny tekst na pomarańczowym CTA",
+    "category": "pass_aa",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "notion_sidebar_text",
+    "text": [55, 53, 47],
+    "background": [247, 246, 243],
+    "context": "Tekst menu bocznego Notion na kremowym tle",
+    "category": "pass_aa",
+    "ui_type": "dashboard"
+  },
+  {
+    "name": "instagram_gradient_button",
+    "text": [255, 255, 255],
+    "background": [131, 58, 180],
+    "context": "Przycisk Instagram — biały tekst na fioletowym",
+    "category": "pass_aa",
+    "ui_type": "aplikacja_mobilna"
+  },
+  {
+    "name": "form_input_border_focus",
+    "text": [33, 37, 41],
+    "background": [233, 236, 239],
+    "context": "Tekst w aktywnym polu formularza na jasnoszarym tle",
+    "category": "pass_aa",
+    "ui_type": "formularz"
+  },
+  {
+    "name": "warning_banner_text",
+    "text": [102, 77, 3],
+    "background": [255, 243, 205],
+    "context": "Ostrzeżenie na żółtym banerze — ciemnożółty tekst",
+    "category": "pass_aa",
+    "ui_type": "dashboard"
+  },
+  {
+    "name": "light_gray_link_on_white",
+    "text": [189, 189, 189],
+    "background": [255, 255, 255],
+    "context": "Wygaszony link w stopce strony — słaby kontrast",
+    "category": "fail",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "white_on_light_green_badge",
+    "text": [255, 255, 255],
+    "background": [144, 238, 144],
+    "context": "Biały tekst na jasnozielonej etykiecie statusu",
+    "category": "fail",
+    "ui_type": "dashboard"
+  },
+  {
+    "name": "lavender_on_white",
+    "text": [230, 230, 250],
+    "background": [255, 255, 255],
+    "context": "Lawendowy tekst dekoracyjny na białym tle",
+    "category": "fail",
+    "ui_type": "aplikacja_mobilna"
+  },
+  {
+    "name": "orange_on_yellow_promo",
+    "text": [255, 140, 0],
+    "background": [255, 255, 102],
+    "context": "Pomarańczowy tekst na żółtym banerze promocyjnym",
+    "category": "fail",
+    "ui_type": "strona_www"
+  },
+  {
+    "name": "mint_on_light_mint",
+    "text": [152, 251, 152],
+    "background": [240, 255, 240],
+    "context": "Miętowy tekst na miętowym tle formularza",
+    "category": "fail",
+    "ui_type": "formularz"
+  }
+]
