@@ -10,8 +10,8 @@ System ocenia kontrast zgodnie z WCAG, wykrywa elementy UI, segmentuje layout, g
 | ---------------------- | ------------------------- | ------------------------------------------------ |
 | Analiza kontrastu WCAG | `src/wcag_analyzer.py`    | Luminancja, współczynnik kontrastu, ocena AA/AAA |
 | Segmentacja layoutu    | `src/segmenter.py`        | K-means (K=5–10) lub U-Net                       |
-| Detekcja elementów UI  | `src/detector.py`         | Canny, kontury, bounding boxy                    |
-| Mapa percepcji         | `src/saliency_mapper.py`  | Spectral residual saliency                       |
+| Detekcja elementów UI  | `src/detector.py`         | Canny, kontury, ikony PNG+alpha                  |
+| Mapa percepcji         | `src/saliency_mapper.py`  | Saliency + ocena widoczności CTA                 |
 | Raport końcowy         | `src/report_generator.py` | Podsumowanie i rekomendacje UX                   |
 
 ## Struktura projektu
@@ -20,8 +20,7 @@ System ocenia kontrast zgodnie z WCAG, wykrywa elementy UI, segmentuje layout, g
 projekt_analiza_obrazu/
 ├── ProjektAnalizaObrazu.ipynb   # Główny notebook (pipeline)
 ├── notebooks/
-│   ├── main_pipeline.ipynb
-│   └── eksperymenty.ipynb
+│   └── ux_cv_analysis-3.ipynb   # Notebook referencyjny zespołu (archiwum)
 ├── src/
 │   ├── wcag_analyzer.py         # Moduł WCAG
 │   ├── segmenter.py

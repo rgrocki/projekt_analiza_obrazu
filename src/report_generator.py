@@ -88,7 +88,14 @@ HTML_TEMPLATE = """
     <p>Brak przetworzonych layoutów.</p>
     {% endif %}
 
-    <h2>4. Rekomendacje projektowe UX</h2>
+    <h2>4. Detekcja ikon UI</h2>
+    {% if icon_table_html %}
+    {{ icon_table_html }}
+    {% else %}
+    <p>Brak przetworzonych ikon.</p>
+    {% endif %}
+
+    <h2>5. Rekomendacje projektowe UX</h2>
     {% for rec in ux_recommendations %}
     <div class="recommendation">{{ rec }}</div>
     {% endfor %}
@@ -126,6 +133,7 @@ class ReportGenerator:
         self.wcag_recommendations: list[str] = []
         self.screenshot_records: list[dict[str, Any]] = []
         self.layout_records: list[dict[str, Any]] = []
+        self.icon_records: list[dict[str, Any]] = []
 
         os.makedirs(output_dir, exist_ok=True)
 
@@ -150,6 +158,8 @@ class ReportGenerator:
         detected_elements: int,
         wcag_metrics: dict[str, Any],
         output_files: dict[str, str] | None = None,
+        n_segments: int | None = None,
+        segment_method: str = "kmeans",
     ) -> None:
         """
         Rejestruje wynik analizy pojedynczego screenshotu.
@@ -159,12 +169,16 @@ class ReportGenerator:
             detected_elements: Liczba wykrytych elementów UI.
             wcag_metrics: Metryki z WCAGAnalyzer.get_screenshot_metrics().
             output_files: Opcjonalne ścieżki do wygenerowanych plików PNG/CSV.
+            n_segments: Liczba segmentów K-means.
+            segment_method: Metoda segmentacji (kmeans / unet).
         """
         self.screenshot_records.append(
             {
                 "Dataset_Type": "Screenshot",
                 "File_Name": filename,
                 "Detected_Elements": detected_elements,
+                "Segment_Method": segment_method,
+                "N_Segments": n_segments if n_segments is not None else "N/A",
                 "WCAG_Worst_Contrast": wcag_metrics.get("worst_contrast", "N/A"),
                 "WCAG_Best_Contrast": wcag_metrics.get("best_contrast", "N/A"),
                 "WCAG_Grade": wcag_metrics.get("grade", "N/A"),
@@ -176,16 +190,41 @@ class ReportGenerator:
             }
         )
 
+    def add_icon(
+        self,
+        filename: str,
+        detected_elements: int,
+        output_files: dict[str, str] | None = None,
+    ) -> None:
+        """Rejestruje wynik detekcji elementów na ikonie UI."""
+        self.icon_records.append(
+            {
+                "Dataset_Type": "Icon",
+                "File_Name": filename,
+                "Detected_Elements": detected_elements,
+                "Output_Detected": (output_files or {}).get("detected", ""),
+            }
+        )
+
     def add_layout(
         self,
         filename: str,
+        saliency_metrics: dict[str, Any] | None = None,
         output_files: dict[str, str] | None = None,
     ) -> None:
         """Rejestruje wynik generowania mapy saliency dla layoutu."""
+        metrics = saliency_metrics or {}
+        cta_eval = metrics.get("cta_evaluation", [])
+        cta_visible = any(c.get("is_visible") for c in cta_eval) if cta_eval else "N/A"
+
         self.layout_records.append(
             {
                 "Dataset_Type": "Figma_Layout",
                 "File_Name": filename,
+                "N_High_Attention_Regions": metrics.get(
+                    "n_high_attention_regions", "N/A"
+                ),
+                "CTA_Visible": cta_visible,
                 "Output_Saliency": (output_files or {}).get("saliency", ""),
             }
         )
@@ -233,6 +272,21 @@ class ReportGenerator:
                 "wymagania kontrastu WCAG AA."
             )
 
+        # Rekomendacje segmentacji UI
+        if self.screenshot_records:
+            avg_segments = [
+                r["N_Segments"]
+                for r in self.screenshot_records
+                if r.get("N_Segments") != "N/A"
+            ]
+            if avg_segments:
+                avg_k = sum(avg_segments) / len(avg_segments)
+                recommendations.append(
+                    f"Segmentacja K-means: średnio {avg_k:.0f} regionów "
+                    f"kolorów na screenshot. Sprawdź, czy segmenty "
+                    f"odpowiadają logicznym blokom layoutu."
+                )
+
         # Rekomendacje detekcji UI
         if self.screenshot_records:
             avg_elements = sum(
@@ -243,6 +297,38 @@ class ReportGenerator:
                 f"na screenshot. Zweryfikuj, czy detekcja konturów "
                 f"obejmuje kluczowe CTA."
             )
+
+        # Rekomendacje saliency / CTA
+        for layout in self.layout_records:
+            cta_visible = layout.get("CTA_Visible")
+            if cta_visible is False:
+                recommendations.append(
+                    f"Layout {layout['File_Name']}: CTA ma niską "
+                    f"widoczność percepcyjną — rozważ zmianę pozycji "
+                    f"lub kontrastu przycisku."
+                )
+
+        low_attention = [
+            l for l in self.layout_records
+            if l.get("N_High_Attention_Regions") == 0
+        ]
+        if low_attention:
+            names = ", ".join(l["File_Name"] for l in low_attention)
+            recommendations.append(
+                f"Layouty bez wyraźnych obszarów uwagi: {names}. "
+                f"Rozważ wzmocnienie wizualne kluczowych elementów."
+            )
+
+        # Rekomendacje ikon
+        if self.icon_records:
+            zero_det = [
+                i for i in self.icon_records if i["Detected_Elements"] == 0
+            ]
+            if zero_det:
+                recommendations.append(
+                    f"{len(zero_det)} ikon bez wykrytych konturów — "
+                    f"sprawdź rozdzielczość lub kontrast krawędzi."
+                )
 
         if not recommendations:
             recommendations.append(
@@ -320,7 +406,9 @@ class ReportGenerator:
             paths["wcag_report"] = wcag_path
 
         # Zbiorczy raport pipeline'u
-        all_records = self.screenshot_records + self.layout_records
+        all_records = (
+            self.screenshot_records + self.layout_records + self.icon_records
+        )
         if all_records:
             df = pd.DataFrame(all_records)
             summary_path = os.path.join(self.output_dir, "ux_cv_system_report.csv")
@@ -346,6 +434,9 @@ class ReportGenerator:
         layout_df = (
             pd.DataFrame(self.layout_records) if self.layout_records else pd.DataFrame()
         )
+        icon_df = (
+            pd.DataFrame(self.icon_records) if self.icon_records else pd.DataFrame()
+        )
 
         html = template.render(
             project_name=self.project_name,
@@ -357,6 +448,7 @@ class ReportGenerator:
             wcag_recommendations=self.wcag_recommendations,
             screenshot_table_html=self._df_to_html(screenshot_df),
             layout_table_html=self._df_to_html(layout_df),
+            icon_table_html=self._df_to_html(icon_df),
             ux_recommendations=ux_recommendations,
         )
         path = os.path.join(self.output_dir, "ux_cv_report.html")

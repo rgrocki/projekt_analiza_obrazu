@@ -1,110 +1,137 @@
-# src/detector.py
-
 """
-Wykrywa elementy interfejsu użytkownika w zrzutach ekranu.
-Działanie:
-- Zamiana na skalę szarości
-- Użycie filtra Gaussa w celu redukcji szumów
-- Wykrywanie krawędzi za pomocą algorytmu Canny
-- Opcjonalne połączenie fragmentarycznych krawędzi
-- Wyodrębnienie konturów i obliczenie prostokątnych ramek ograniczających
-- Filtrowanie ramek ograniczających na podstawie minimalnej szerokości, wysokości i powierzchni
-- Sortowanie ramek ograniczających w kolejności odczytu (od góry do dołu, od lewej do prawej)
-- Zwracanie listy ramek ograniczających wykrytych elementów interfejsu użytkownika
-- Opcjonalne zwracanie mapy krawędzi Canny do celów debugowania
+Moduł detekcji elementów UI.
+
+Wykrywa elementy interfejsu (przyciski, pola, ikony) metodą Canny + kontury.
 """
 
-from dataclasses import dataclass
-from typing import List
+from __future__ import annotations
+
 import cv2
 import numpy as np
 
-@dataclass
-class BoundingBox:
-    x: int
-    y: int
-    width: int
-    height: int
 
-    @property
-    def area(self) -> int:
-        return self.width * self.height
+def load_icon_with_background(
+    path: str,
+    bg_color: tuple[int, int, int] = (245, 245, 245),
+) -> np.ndarray:
+    """
+    Wczytuje PNG z przezroczystością i nakłada jednolite tło.
+
+    Ikony z Figmy mają kanał alpha — OpenCV bez tej funkcji
+    zwraca nieprzewidywalne kolory w miejscu przezroczystości.
+
+    Args:
+        path: Ścieżka do pliku ikony (PNG).
+        bg_color: Kolor tła w BGR (domyślnie jasnoszary).
+
+    Returns:
+        Obraz BGR gotowy do analizy detektorem.
+    """
+    img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    if img is None:
+        raise FileNotFoundError(f"Nie można wczytać ikony: {path}")
+
+    if img.ndim == 3 and img.shape[2] == 4:
+        alpha = img[:, :, 3] / 255.0
+        bgr = img[:, :, :3]
+        background = np.full_like(bgr, bg_color, dtype=np.uint8)
+        composited = (
+            alpha[..., None] * bgr + (1 - alpha[..., None]) * background
+        ).astype(np.uint8)
+        return composited
+
+    if img.ndim == 3 and img.shape[2] == 3:
+        return img
+
+    return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
 
-class UIElementDetector:
+class UIDetector:
+    """Wykrywa elementy UI metodą detekcji krawędzi i konturów."""
+
     def __init__(
         self,
         canny_low: int = 50,
         canny_high: int = 150,
-        min_width: int = 20,
-        min_height: int = 20,
-        min_area: int = 400,
-    ):
+        min_area: int = 200,
+    ) -> None:
         self.canny_low = canny_low
         self.canny_high = canny_high
-        self.min_width = min_width
-        self.min_height = min_height
         self.min_area = min_area
 
-    def detect(self, image: np.ndarray) -> List[BoundingBox]:
-       
-        # Konwersja obrazu na skalę szarości
+    def detect_edges(self, image: np.ndarray) -> np.ndarray:
+        """Zwraca mapę krawędzi Canny."""
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Zastosowanie filtru Gaussa w celu redukcji szumów
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        return cv2.Canny(blurred, self.canny_low, self.canny_high)
 
-        # Wykrywanie krawędzi za pomocą algorytmu Canny
-        edges = cv2.Canny(
-            blurred,
-            self.canny_low,
-            self.canny_high,
-        )
+    def find_elements(self, image: np.ndarray) -> list[tuple[int, int, int, int]]:
+        """
+        Znajduje bounding boxy elementów UI na obrazie.
 
-        # Opcjonalne: połączenie fragmentarycznych krawędzi
-        kernel = np.ones((3, 3), np.uint8)
-        edges = cv2.dilate(edges, kernel, iterations=1)
-
-        # Wyodrębnienie konturów
+        Returns:
+            Lista prostokątów (x, y, w, h).
+        """
+        edges = self.detect_edges(image)
+        # Dylatacja łączy przerwane krawędzie w spójne kontury
+        dilated = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
         contours, _ = cv2.findContours(
-            edges,
-            cv2.RETR_TREE,
-            cv2.CHAIN_APPROX_SIMPLE,
+            dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
 
-        boxes = []
-
+        boxes: list[tuple[int, int, int, int]] = []
         for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-
-            if w < self.min_width:
+            if cv2.contourArea(contour) < self.min_area:
                 continue
-
-            if h < self.min_height:
-                continue
-
-            if w * h < self.min_area:
-                continue
-
-            boxes.append(
-                BoundingBox(x, y, w, h)
-            )
-
-        # Reading order
-        boxes.sort(key=lambda b: (b.y, b.x))
-
+            boxes.append(cv2.boundingRect(contour))
         return boxes
 
-    def detect_edges(self, image: np.ndarray) -> np.ndarray:
-        """
-        Mapa krawędzi Canny dla celów debugowania.
-        """
+    def draw_detections(
+        self,
+        image: np.ndarray,
+        boxes: list[tuple[int, int, int, int]],
+    ) -> np.ndarray:
+        """Rysuje czerwone bounding boxy na kopii obrazu."""
+        result = image.copy()
+        for x, y, w, h in boxes:
+            cv2.rectangle(result, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        return result
 
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    def analyze(self, image: np.ndarray) -> dict:
+        """Pełna analiza obrazu — używana wewnętrznie i w raportach."""
+        boxes = self.find_elements(image)
+        annotated = self.draw_detections(image, boxes)
+        return {
+            "boxes": boxes,
+            "annotated_image": annotated,
+            "n_detected": len(boxes),
+        }
 
-        return cv2.Canny(
-            blurred,
-            self.canny_low,
-            self.canny_high,
-        )
+    def detect_elements(
+        self, image_path: str
+    ) -> tuple[np.ndarray, list[tuple[int, int, int, int]]]:
+        """
+        Wykrywa elementy UI na pliku obrazu.
+
+        Interfejs wymagany przez główny notebook pipeline.
+
+        Args:
+            image_path: Ścieżka do screenshotu lub ikony PNG/JPG.
+
+        Returns:
+            annotated_img: Obraz z zaznaczonymi elementami (BGR).
+            bboxes: Lista bounding boxów (x, y, w, h).
+        """
+        image = cv2.imread(image_path)
+        if image is None:
+            raise FileNotFoundError(f"Nie można wczytać obrazu: {image_path}")
+
+        result = self.analyze(image)
+        return result["annotated_image"], result["boxes"]
+
+    def detect_from_array(
+        self, image: np.ndarray
+    ) -> tuple[np.ndarray, list[tuple[int, int, int, int]]]:
+        """Wariant dla obrazów już wczytanych (np. ikony z tłem)."""
+        result = self.analyze(image)
+        return result["annotated_image"], result["boxes"]
